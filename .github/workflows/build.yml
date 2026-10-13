@@ -22,9 +22,18 @@ jobs:
       - name: Descomprimir proyecto
         run: unzip -q MiniMini-Forge-1.12.2.zip -d work
 
-      - name: Compilar
+      - name: Compilar (prueba varias versiones de Forge)
         working-directory: work/proj
-        run: gradle setupCIWorkspace build --no-daemon
+        run: |
+          for v in 2860 2859 2855 2847 2838; do
+            echo "=== Probando Forge 14.23.5.$v ==="
+            sed -i "s/version = \"1.12.2-14.23.5.[0-9]*\"/version = \"1.12.2-14.23.5.$v\"/" build.gradle
+            if gradle setupCIWorkspace build --no-daemon; then
+              echo "=== FUNCIONO con $v ==="
+              exit 0
+            fi
+          done
+          exit 1
 
       - uses: actions/upload-artifact@v4
         with:
